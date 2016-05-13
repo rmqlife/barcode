@@ -91,9 +91,19 @@ if __name__ == "__main__":
         cv2.imshow("img",img)
         print marker().img2mat(img,5,4)
         cv2.waitKey(0)
-    
-    img2 = marker().encode(0)
+    import sys
+    print sys.argv
+    num = 0
+    if len(sys.argv)>1:    
+        num = int(sys.argv[1])
+
+    img2 = marker().encode(num)
     cv2.imshow("img",img2)
     print marker().decode(img2)
     cv2.waitKey(0)
+    
+    if len(sys.argv)>2:
+        fn = sys.argv[2]
+        cv2.imwrite(fn,img2)  
+       
     
