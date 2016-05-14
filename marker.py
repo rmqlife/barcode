@@ -78,32 +78,73 @@ class marker:
             matstr.append(s)
         return matstr
         
-    def strlist2mat(self,strlist):
+    def strlist2mat(self, strlist):
         mat = []
          # h is a string
         for h in strlist:
             mat.append( [int(i) for i in h] )
         return mat
+    
+    # find all the marker candidates in an raw image, BGR
+    def find(self, img, debug = False):
+        gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+        if debug:
+            cv2.imshow("gray",gray)
+        #ret2, bw = cv2.threshold(gray,100,255,cv2.THRESH_BINARY)
+        bw = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, \
+                    cv2.THRESH_BINARY, 101, 7)
+        if debug:            
+            cv2.imshow("bw",bw)
             
+        _, cnts, _ = cv2.findContours(bw.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)        
+        # remove small ones
+        cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:20]
+        # find candidates have 4 laterals
+        candidates = []
+        for c in cnts:
+            peri =  cv2.arcLength(c, True)
+            approx = cv2.approxPolyDP(c, 0.02 * peri, True)
+            if len(approx) == 4:
+                candidates.append(approx)
+        if debug:
+            cv2.drawContours(img, candidates, -1, (255,0,0), 2)
+            cv2.imshow("cnts", img)
+        
+        # warp candidates
+        for c in candidates:
+            c = c.reshape(4,2)
+            print c
+            
+        if debug:
+            cv2.waitKey(0)
+                
 if __name__ == "__main__":
     if False:
         img = marker().mat2img([[1,1],[0,1],[1,1]],100)    
         cv2.imshow("img",img)
         print marker().img2mat(img,5,4)
         cv2.waitKey(0)
-    import sys
-    print sys.argv
-    num = 0
-    if len(sys.argv)>1:    
-        num = int(sys.argv[1])
+    if False:
+        import sys
+        print sys.argv
+        num = 0
+        if len(sys.argv)>1:    
+            num = int(sys.argv[1])
 
-    img2 = marker().encode(num)
-    cv2.imshow("img",img2)
-    print marker().decode(img2)
-    cv2.waitKey(0)
-    
-    if len(sys.argv)>2:
-        fn = sys.argv[2]
-        cv2.imwrite(fn,img2)  
-       
+        img2 = marker().encode(num)
+        cv2.imshow("img",img2)
+        print marker().decode(img2)
+        cv2.waitKey(0)
+        
+        if len(sys.argv)>2:
+            fn = sys.argv[2]
+            cv2.imwrite(fn,img2)  
+            
+    if True:
+        import sys
+        print sys.argv
+        if len(sys.argv)>1:
+            fn = sys.argv[1]
+            img = cv2.imread(fn)
+            marker().find(img,0)
     
