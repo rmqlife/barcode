@@ -87,7 +87,7 @@ class marker:
         return mat
     
     # find all the marker candidates in an raw image, BGR
-    def find(self, img, debug = False):
+    def find(self, img, debug = False, show = False):
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
         #ret2, bw = cv2.threshold(gray,100,255,cv2.THRESH_BINARY)
         bw = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, \
@@ -98,41 +98,59 @@ class marker:
         _, cnts, _ = cv2.findContours(bw.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)        
         # remove small ones
         cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:20]
-        # find candidates have 4 laterals
-        candidates = []
+        # find polygons have 4 laterals        
+        poly4s = []
         for c in cnts:
             peri =  cv2.arcLength(c, True)
             approx = cv2.approxPolyDP(c, 0.02 * peri, True)
             if len(approx) == 4:
-                candidates.append(approx)
+                poly4s.append(approx)
         if debug:
-            cv2.drawContours(img, candidates, -1, (255,0,0), 2)
-            cv2.imshow("cnts", img)
+            cv2.drawContours(img, poly4s, -1, (255,0,0), 2)
         
         # warp candidates
         W = 100
         target = np.array([[0,0],[W,0],[W,W],[0,W]], dtype = "float32")
-        warps = []
+        candidates = []
         
-        for c in candidates:
+        for poly4 in poly4s:
             # remove brackets
-            c = np.float32(c.reshape(4,2))
-            # c, target need to be float32
-            M = cv2.getPerspectiveTransform(c,target) 
-            warp = cv2.warpPerspective(bw, M, (W,W))
-            warps.append(warp)
+            position = poly4.copy()
+            poly4 = np.float32(poly4.reshape(4,2))
+            # poly4, target need to be float32
+            M = cv2.getPerspectiveTransform(poly4,target) 
+            candidate = (cv2.warpPerspective(bw, M, (W,W)), position)
+            candidates.append(candidate)
             
         if debug:
-            # horizontal stack warps    
-            cv2.imshow("warp",np.hstack(warps))
+            show = []
+            # horizontal stack warps 
+            for candidate in candidates:
+                pic,position = candidate
+                show.append(pic)
+            cv2.imshow("warp",np.hstack(show))
         
         # decode
-        for i in warps:
-            print self.decode(i)
-            
+        result = list()
+        for candidate in candidates:
+            pic, position = candidate
+            ret, num =  self.decode(pic)
+            if ret:
+                result.append((num,position))            
+           
         if debug:
             cv2.waitKey(0)
             
+        if show:
+            for num, position in result:
+                cv2.drawContours(img, [position], -1, (0,255,0), 2)
+                # vertical mean
+                textpos = tuple(np.int0( np.mean(position.reshape(4,2), axis = 0)))
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                cv2.putText(img,str(num),textpos, font, 1,(255,255,255),2,cv2.LINE_AA)
+            return show
+        else:    
+            return result
         
                 
 if __name__ == "__main__":
@@ -164,7 +182,8 @@ if __name__ == "__main__":
         if len(sys.argv)>1:
             fn = sys.argv[1]
             img = cv2.imread(fn)
-            marker().find(img,1)
+            show = marker().find(img,debug = 0, show = 1)
+            
             
     if False:
         import sys
