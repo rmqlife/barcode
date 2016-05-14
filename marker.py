@@ -33,13 +33,12 @@ class marker:
         # width of block
         bw = w/cols
         mat = np.int0(np.zeros((rows,cols)))
-               
-        for y in range(0,h,bh):
-            for x in range(0,w,bw):
-                roi = img[y:y+bh,x:x+bw]
+        for y in xrange(rows):
+            for x in xrange(cols):
+                roi = img[y*bh:y*bh+bh,x*bw:x*bw+bw]
                 white = cv2.countNonZero(roi)
                 v = int(white > (bw*bh/2))
-                mat[y/bh,x/bw] = v
+                mat[y,x] = v
         return mat
           
     # hamming2d 5*5, num [0, 1023]
@@ -88,13 +87,11 @@ class marker:
     # find all the marker candidates in an raw image, BGR
     def find(self, img, debug = False):
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-        if debug:
-            cv2.imshow("gray",gray)
         #ret2, bw = cv2.threshold(gray,100,255,cv2.THRESH_BINARY)
         bw = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, \
                     cv2.THRESH_BINARY, 101, 7)
         if debug:            
-            cv2.imshow("bw",bw)
+            cv2.imshow("bw",np.hstack([gray,bw]))
             
         _, cnts, _ = cv2.findContours(bw.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)        
         # remove small ones
@@ -126,10 +123,15 @@ class marker:
         if debug:
             # horizontal stack warps    
             cv2.imshow("warp",np.hstack(warps))
-            cv2.waitKey(0)
+        
+        # decode
+        for i in warps:
+            print self.decode(i)
             
         if debug:
             cv2.waitKey(0)
+            
+        
                 
 if __name__ == "__main__":
     if False:
@@ -160,5 +162,5 @@ if __name__ == "__main__":
         if len(sys.argv)>1:
             fn = sys.argv[1]
             img = cv2.imread(fn)
-            marker().find(img,1)
+            marker().find(img,0)
     

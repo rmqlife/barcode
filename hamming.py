@@ -3,7 +3,6 @@ class hamming:
         w =  self.check(hamming, odd)
         h = list(hamming)
         if w>0 and w<len(hamming):
-            print w
             h[w-1] = str(1 - int(h[w-1]))
             correct = "".join(h)
         else:
