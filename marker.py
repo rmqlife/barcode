@@ -111,9 +111,22 @@ class marker:
             cv2.imshow("cnts", img)
         
         # warp candidates
+        W = 100
+        target = np.array([[0,0],[0,W],[W,W],[W,0]], dtype = "float32")
+        warps = []
+        
         for c in candidates:
-            c = c.reshape(4,2)
-            print c
+            # remove brackets
+            c = np.float32(c.reshape(4,2))
+            # c, target need to be float32
+            M = cv2.getPerspectiveTransform(c,target) 
+            warp = cv2.warpPerspective(bw, M, (W,W))
+            warps.append(warp)
+            
+        if debug:
+            # horizontal stack warps    
+            cv2.imshow("warp",np.hstack(warps))
+            cv2.waitKey(0)
             
         if debug:
             cv2.waitKey(0)
@@ -124,6 +137,7 @@ if __name__ == "__main__":
         cv2.imshow("img",img)
         print marker().img2mat(img,5,4)
         cv2.waitKey(0)
+        
     if False:
         import sys
         print sys.argv
@@ -146,5 +160,5 @@ if __name__ == "__main__":
         if len(sys.argv)>1:
             fn = sys.argv[1]
             img = cv2.imread(fn)
-            marker().find(img,0)
+            marker().find(img,1)
     
