@@ -50,7 +50,7 @@ class marker:
         return self.mat2img(mat)   
     
     # hamming2d 5*5 decode
-    def decode(self, img):
+    def decode(self, img, debug = False):
         mat = self.img2mat(img,7,7)
         # remove the border
         mat = mat[1:-1,1:-1]
@@ -59,8 +59,10 @@ class marker:
         # rotate the mat to find the right code
         for i in xrange(4):
             ret,num = h2d.decode(self.mat2strlist(mat))
-            if ret == True:
-                return ret,num
+            if debug:
+                print ret,num
+            elif ret == True:
+                return ret, num
             mat = np.rot90(mat)
         return False, -1
     
@@ -109,7 +111,7 @@ class marker:
         
         # warp candidates
         W = 100
-        target = np.array([[0,0],[0,W],[W,W],[W,0]], dtype = "float32")
+        target = np.array([[0,0],[W,0],[W,W],[0,W]], dtype = "float32")
         warps = []
         
         for c in candidates:
@@ -162,5 +164,12 @@ if __name__ == "__main__":
         if len(sys.argv)>1:
             fn = sys.argv[1]
             img = cv2.imread(fn)
-            marker().find(img,0)
-    
+            marker().find(img,1)
+            
+    if False:
+        import sys
+        print sys.argv
+        if len(sys.argv)>1:
+            fn = sys.argv[1]
+            img = cv2.imread(fn,0)
+            marker().decode(img)
