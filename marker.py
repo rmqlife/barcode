@@ -147,8 +147,8 @@ class marker:
                 # vertical mean
                 textpos = tuple(np.int0( np.mean(position.reshape(4,2), axis = 0)))
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(img,str(num),textpos, font, 1,(255,255,255),2,cv2.LINE_AA)
-            return show
+                cv2.putText(img,str(num),textpos, font, 1,(255,255,0),2,cv2.LINE_AA)
+            return img
         else:    
             return result
         
@@ -183,7 +183,8 @@ if __name__ == "__main__":
             fn = sys.argv[1]
             img = cv2.imread(fn)
             show = marker().find(img,debug = 0, show = 1)
-            
+            cv2.imshow("show",show)
+            cv2.waitKey(0)
             
     if False:
         import sys
