@@ -88,6 +88,7 @@ class marker:
     
     # find all the marker candidates in an raw image, BGR
     def find(self, img, debug = False, show = False):
+        """return a list of (num,position) """
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
         #ret2, bw = cv2.threshold(gray,100,255,cv2.THRESH_BINARY)
         bw = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, \
