@@ -183,7 +183,7 @@ if __name__ == "__main__":
         if len(sys.argv)>1:
             fn = sys.argv[1]
             img = cv2.imread(fn)
-            show = marker().find(img,debug = 0, show = 1)
+            show = marker().find(img,debug = 1, show = 1)
             cv2.imshow("show",show)
             cv2.waitKey(0)
             
