@@ -90,7 +90,6 @@ class marker:
     def find(self, img, debug = False, show = False):
         """return a list of (num,position) """
         gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-        #ret2, bw = cv2.threshold(gray,100,255,cv2.THRESH_BINARY)
         bw = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, \
                     cv2.THRESH_BINARY, 101, 7)
         if debug:            
@@ -149,7 +148,7 @@ class marker:
                 textpos = tuple(np.int0( np.mean(position.reshape(4,2), axis = 0)))
                 font = cv2.FONT_HERSHEY_SIMPLEX
                 cv2.putText(img,str(num),textpos, font, 1,(255,255,0),2,cv2.LINE_AA)
-            return img
+            return result,img
         else:    
             return result
         
