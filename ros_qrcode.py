@@ -47,7 +47,20 @@ def show_marker(x,y,z):
     marker.pose.position.z = z
     return marker
 
-
+def transform():
+    # warp candidates
+    W = 100
+    target = np.array([[0,0],[W,0],[W,W],[0,W]], dtype = "float32")
+    candidates = []
+    
+    for poly4 in poly4s:
+        # remove brackets
+        position = poly4.copy()
+        poly4 = np.float32(poly4.reshape(4,2))
+        # poly4, target need to be float32
+        M = cv2.getPerspectiveTransform(poly4,target) 
+        candidate = (cv2.warpPerspective(bw, M, (W,W)), position)
+        candidates.append(candidate)
 
 
 if __name__ == '__main__':
